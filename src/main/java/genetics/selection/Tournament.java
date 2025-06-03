@@ -1,9 +1,7 @@
 package genetics.selection;
 
-import SAT.Statement;
 import genetics.Chromosome;
 import genetics.Fitness;
-import genetics.LocalSearch;
 import genetics.Population;
 
 import java.util.ArrayList;
@@ -18,7 +16,7 @@ public class Tournament extends Selection {
     private static final int TOURNAMENT_SIZE = 3;
     private static final int WINNER_COUNT = 2;
 
-    public Tournament(Population current_population, Fitness[] fitness, Statement statement) {
+    public Tournament(Population current_population, Fitness[] fitness) {
         super(current_population, fitness);
         //this.statement = statement;
     }
@@ -35,7 +33,7 @@ public class Tournament extends Selection {
             indices[i] = i;
         }
 
-        Arrays.sort(indices, Comparator.<Integer>comparingInt(i -> fitness[i].getFitness()).reversed());
+        Arrays.sort(indices, Comparator.<Integer>comparingDouble(i -> fitness[i].getFitness()).reversed());
 
         for (int e = 0; e < ELITE_COUNT; e++) {
             int eliteIdx = indices[e] + 1;
@@ -55,7 +53,7 @@ public class Tournament extends Selection {
                 participants.add(idx);
             }
 
-            participants.sort((a, b) -> Integer.compare(
+            participants.sort((a, b) -> Double.compare(
                     fitness[b - 1].getFitness(),
                     fitness[a - 1].getFitness()));
 

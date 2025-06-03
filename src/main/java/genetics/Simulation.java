@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Simulation {
     private static final int POP_SIZE = 300;
     private static final int EXTINCTION = 1000;
-    private static final double CROSS_OVER_CHANCE = 0.2;
+    private static final double CROSS_OVER_CHANCE = 0.4;
     private final int variableCount;
     private final Statement statement;
 
@@ -47,11 +47,6 @@ public class Simulation {
             Selection selection = new Tournament(population, populationFitness);
             population = selection.getNextPopulation();
 
-            //mutate P(T)
-            for (int i = 1; i <= POP_SIZE; i++) {
-                Mutation.mutate(population.at(i));
-            }
-
             //cross-over P(T)
             int totalCross = (int) Math.round(POP_SIZE * CROSS_OVER_CHANCE);
             for (int x = 0; x < totalCross; x++) {
@@ -61,6 +56,15 @@ public class Simulation {
                     parentB = ThreadLocalRandom.current().nextInt(1, POP_SIZE + 1);
                 } while (parentB == parentA);
                 population.crossover(parentA, parentB, 1, true);
+            }
+
+            //mutate P(T)
+            for (int i = 1; i <= POP_SIZE; i++) {
+                Mutation.mutate(population.at(i));
+            }
+
+            for (int i = 1; i <= POP_SIZE; i++) {
+                LocalSearch.greedyImprove(statement, population.at(i));
             }
 
             //evaluate P(T)
@@ -81,7 +85,7 @@ public class Simulation {
             }
 
             //decaying the weight
-            if (t % 100 == 0) {
+            if (t % 10 == 0) {
                 double maxWeight = 0;
                 for (int i = 1; i <= statement.getLength(); i++) {
                     double w = statement.getClauseWeight(i);
@@ -102,9 +106,8 @@ public class Simulation {
                 }                        
             }                            
 
-            if (t % 100 == 0 && t != 1000) {
-                System.out.println("Run: " + t + ". Satisfied: " + statement.getTrueClauses(bestChromosome) + ". To satisfy: " + statement.getLength() + ".");
-            }
+            System.out.println("Run: " + t + ". Satisfied: " + statement.getTrueClauses(bestChromosome) + ". To satisfy: " + statement.getLength() + ".");
+
         }
 
         System.out.println("Run: " + t + ". Satisfied: " + statement.getTrueClauses(bestChromosome) + ". To satisfy: " + statement.getLength() + ".");

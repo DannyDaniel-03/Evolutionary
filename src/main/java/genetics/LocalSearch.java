@@ -9,16 +9,16 @@ public class LocalSearch {
 
         while (improved) {
             improved = false;
-            int currentScore = new Fitness(statement, chrom).getFitness();
+            double currentScore = new Fitness(statement, chrom).getFitness();
 
             Chromosome bestNeighbor = null;
-            int bestScore = currentScore;
+            double bestScore = currentScore;
 
             for (int var = 1; var <= varCount; var++) {
                 Chromosome trial = new Chromosome(chrom);
                 trial.flipGene(var);
 
-                int trialScore = new Fitness(statement, trial).getFitness();
+                double trialScore = new Fitness(statement, trial).getFitness();
                 if (trialScore > bestScore) {
                     bestScore = trialScore;
                     bestNeighbor = trial;

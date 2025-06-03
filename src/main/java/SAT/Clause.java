@@ -23,12 +23,12 @@ public class Clause {
     public boolean isSatisfied(Chromosome chromosome) {
         for (int literal : literals) {
             if (literal < 0) {
-                if (chromosome.getGene(-literal)) return false;
+                if (!chromosome.getGene(-literal)) return true;
             } else {
-                if (!chromosome.getGene(literal)) return false;
+                if (chromosome.getGene(literal)) return true;
             }
         }
-        return true;
+        return false;
     }
 
     @Override
