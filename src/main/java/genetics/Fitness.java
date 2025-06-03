@@ -1,21 +1,30 @@
 package genetics;
 
+import SAT.Clause;
 import SAT.Statement;
 
 public class Fitness {
-    private final int maxFitness;
-    private final int fitness;
+    private final double fitness;
+    private final Chromosome chromosome;
+    private final Statement statement;
 
     public Fitness(Statement statement, Chromosome chromosome) {
-        maxFitness = statement.getLength();
-        fitness = statement.getTrueClauses(chromosome);
+        this.chromosome = chromosome;
+        this.statement = statement;
+
+        double weightedFitness = 0;
+        for (int i = 1; i <= statement.getLength(); i++) {
+            Clause clause = statement.getClause(i);
+            double weight = statement.getClauseWeight(i);
+            weightedFitness += clause.isSatisfied(chromosome) ? weight : -weight;
+        }
+
+        fitness = weightedFitness;
     }
 
-    public int max() {
-        return maxFitness;
-    }
 
-    public int getFitness() {
+
+    public double getFitness() {
         return fitness;
     }
 

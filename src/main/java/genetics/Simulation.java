@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Simulation {
     private static final int POP_SIZE = 300;
     private static final int EXTINCTION = 1000;
-    private static final double CROSS_OVER_CHANCE = 0.1;
+    private static final double CROSS_OVER_CHANCE = 0.2;
     private final int variableCount;
     private final Statement statement;
 
@@ -26,6 +26,7 @@ public class Simulation {
         //evaluate P(t)
         Fitness[] populationFitness = new Fitness[POP_SIZE];
         Fitness bestFitness = new Fitness(statement, population.at(1));
+        Chromosome bestChromosome = population.at(1);
         populationFitness[0] = bestFitness;
         for (int i = 1; i < POP_SIZE; i++) {
             Fitness chromosomeFitness = new Fitness(statement, population.at(i + 1));
@@ -33,17 +34,23 @@ public class Simulation {
 
             if (chromosomeFitness.getFitness() > bestFitness.getFitness()) {
                 bestFitness = chromosomeFitness;
+                bestChromosome = population.at(i + 1);
             }
         }
 
-        System.out.println("Run: " + t + ". Current fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
+        System.out.println("Run: " + t + ". Satisfied: " + statement.getTrueClauses(bestChromosome) + ". To satisfy: " + statement.getLength() + ".");
         //stopping condition
-        while (t < EXTINCTION && bestFitness.getFitness() < bestFitness.max()) {
+        while (t < EXTINCTION && !statement.isSatisfied(bestChromosome)) {
             t++;
 
             //select P(t) from P(t-1)
-            Selection selection = new Tournament(population, populationFitness, statement);
+            Selection selection = new Tournament(population, populationFitness);
             population = selection.getNextPopulation();
+
+            //mutate P(T)
+            for (int i = 1; i <= POP_SIZE; i++) {
+                Mutation.mutate(population.at(i));
+            }
 
             //cross-over P(T)
             int totalCross = (int) Math.round(POP_SIZE * CROSS_OVER_CHANCE);
@@ -53,12 +60,7 @@ public class Simulation {
                 do {
                     parentB = ThreadLocalRandom.current().nextInt(1, POP_SIZE + 1);
                 } while (parentB == parentA);
-                population.crossover(parentA, parentB, 1, false);
-            }
-
-            //mutate P(T)
-            for (int i = 1; i <= POP_SIZE; i++) {
-                Mutation.mutate(population.at(i));
+                population.crossover(parentA, parentB, 1, true);
             }
 
             //evaluate P(T)
@@ -71,13 +73,40 @@ public class Simulation {
                 }
             }
 
-            for (int i = 1; i <= POP_SIZE; i++) {
-                LocalSearch.greedyImprove(statement, population.at(i));
+            //incrementing the weight of each clause
+            for (int i = 1; i <= statement.getLength(); i++) {
+                if (!statement.getClause(i).isSatisfied(bestChromosome)) {
+                    statement.incWeight(i);
+                }
             }
 
-            System.out.println("Run: " + t + ". Current fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
+            //decaying the weight
+            if (t % 100 == 0) {
+                double maxWeight = 0;
+                for (int i = 1; i <= statement.getLength(); i++) {
+                    double w = statement.getClauseWeight(i);
+                    if (w > maxWeight) {
+                        maxWeight = w;
+                    }                    
+                }                        
+
+                if (maxWeight > 100) {
+                    for (int i = 1; i <= statement.getLength(); i++) {
+                        int initial = statement.getClause(i).getSize();
+                        double reduced = statement.getClauseWeight(i) / 3;
+                        if (reduced < initial) {
+                            reduced = initial;
+                        }
+                        statement.setClauseWeight(i, reduced);
+                    }                    
+                }                        
+            }                            
+
+            if (t % 100 == 0 && t != 1000) {
+                System.out.println("Run: " + t + ". Satisfied: " + statement.getTrueClauses(bestChromosome) + ". To satisfy: " + statement.getLength() + ".");
+            }
         }
 
-        System.out.println("Best fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
+        System.out.println("Run: " + t + ". Satisfied: " + statement.getTrueClauses(bestChromosome) + ". To satisfy: " + statement.getLength() + ".");
     }
 }
