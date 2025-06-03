@@ -56,24 +56,7 @@ public class Population {
 
         Chromosome parent1 = at(idx1);
         Chromosome parent2 = at(idx2);
-        int geneCount = parent1.getGeneCount();
-
-        if (cuts <= 0 || cuts >= geneCount) {
-            throw new IllegalArgumentException(
-                    "Number of cuts must be >0 and < " + geneCount
-            );
-        }
-
-        if (!uniform) {
-            int maxCuts = (int) Math.floor(Math.sqrt(geneCount));
-            if (cuts > maxCuts)
-                throw new IllegalArgumentException(
-                    "Too many random cut points requested: " + cuts +
-                    ". To maintain genetic integrity and avoid excessive fragmentation, " +
-                    "the number of random cuts must be ≤ √geneCount ≈ " + maxCuts +
-                    " (geneCount = " + geneCount + ")."
-                );
-        }
+        int geneCount = getGeneCount(cuts, uniform, parent1);
 
 
         List<Integer> cutPoints = new ArrayList<>(cuts);
@@ -107,6 +90,28 @@ public class Population {
 
         chromosomes[idx1 - 1] = offspring1;
         chromosomes[idx2 - 1] = offspring2;
+    }
+
+    private static int getGeneCount(int cuts, boolean uniform, Chromosome parent1) {
+        int geneCount = parent1.getGeneCount();
+
+        if (cuts <= 0 || cuts >= geneCount) {
+            throw new IllegalArgumentException(
+                    "Number of cuts must be >0 and < " + geneCount
+            );
+        }
+
+        if (!uniform) {
+            int maxCuts = (int) Math.floor(Math.sqrt(geneCount));
+            if (cuts > maxCuts)
+                throw new IllegalArgumentException(
+                    "Too many random cut points requested: " + cuts +
+                    ". To maintain genetic integrity and avoid excessive fragmentation, " +
+                    "the number of random cuts must be ≤ √geneCount ≈ " + maxCuts +
+                    " (geneCount = " + geneCount + ")."
+                );
+        }
+        return geneCount;
     }
 
     private void HelperCrossover(Chromosome parent1, Chromosome parent2, Chromosome offspring1, Chromosome offspring2, boolean swap, int prevCut, int cp) {

@@ -1,7 +1,7 @@
 package genetics;
 
 public class Mutation {
-    private static double PROBABILITY = 0.01;
+    private static double PROBABILITY = 0.1;
 
     public static void mutate(Chromosome chromosome) {
         int geneCount = chromosome.getGeneCount();

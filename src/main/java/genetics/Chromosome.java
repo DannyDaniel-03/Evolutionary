@@ -27,6 +27,15 @@ public class Chromosome {
             }
     }
 
+    public Chromosome(Chromosome other) {
+        this.genes = other.genes.clone();
+        this.geneCount = other.geneCount;
+    }
+
+    public void replaceWith(Chromosome other) {
+        System.arraycopy(other.genes, 0, genes, 0, genes.length);
+    }
+
     public boolean getGene(int index) {
         checkIndex(index--);
         return (genes[index / 8] & (1 << (index % 8))) != 0;

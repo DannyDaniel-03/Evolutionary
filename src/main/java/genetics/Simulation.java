@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Simulation {
     private static final int POP_SIZE = 300;
     private static final int EXTINCTION = 1000;
-    private static final double CROSS_OVER_CHANCE = 0.2;
+    private static final double CROSS_OVER_CHANCE = 0.1;
     private final int variableCount;
     private final Statement statement;
 
@@ -42,13 +42,8 @@ public class Simulation {
             t++;
 
             //select P(t) from P(t-1)
-            Selection selection = new Tournament(population, populationFitness);
+            Selection selection = new Tournament(population, populationFitness, statement);
             population = selection.getNextPopulation();
-
-            //mutate P(T)
-            for (int i = 1; i <= POP_SIZE; i++) {
-                Mutation.mutate(population.at(i));
-            }
 
             //cross-over P(T)
             int totalCross = (int) Math.round(POP_SIZE * CROSS_OVER_CHANCE);
@@ -58,7 +53,12 @@ public class Simulation {
                 do {
                     parentB = ThreadLocalRandom.current().nextInt(1, POP_SIZE + 1);
                 } while (parentB == parentA);
-                population.crossover(parentA, parentB, 1, true);
+                population.crossover(parentA, parentB, 1, false);
+            }
+
+            //mutate P(T)
+            for (int i = 1; i <= POP_SIZE; i++) {
+                Mutation.mutate(population.at(i));
             }
 
             //evaluate P(T)
@@ -71,9 +71,11 @@ public class Simulation {
                 }
             }
 
-            if (t % 100 == 0 && t != 1000) {
-                System.out.println("Run: " + t + ". Current fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
+            for (int i = 1; i <= POP_SIZE; i++) {
+                LocalSearch.greedyImprove(statement, population.at(i));
             }
+
+            System.out.println("Run: " + t + ". Current fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
         }
 
         System.out.println("Best fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
