@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Simulation {
     private static final int POP_SIZE = 300;
     private static final int EXTINCTION = 1000;
-    private static final double CROSS_OVER_CHANCE = 0.1;
+    private static final double CROSS_OVER_CHANCE = 0.3;
     private final int variableCount;
     private final Statement statement;
 
@@ -71,9 +71,9 @@ public class Simulation {
                 }
             }
 
-            for (int i = 1; i <= POP_SIZE; i++) {
+            /*for (int i = 1; i <= POP_SIZE; i++) {
                 LocalSearch.greedyImprove(statement, population.at(i));
-            }
+            }*/
 
             System.out.println("Run: " + t + ". Current fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
         }
