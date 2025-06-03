@@ -4,12 +4,18 @@ import SAT.Statement;
 import genetics.selection.Selection;
 import genetics.selection.Tournament;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.Arrays;
+import java.util.stream.IntStream;
 
 public class Simulation {
-    private static final int POP_SIZE = 300;
+    private static final int POP_SIZE = 200;
     private static final int EXTINCTION = 1000;
     private static final double CROSS_OVER_CHANCE = 0.3;
+    private static final double SCRAMBLE_CHANCE = 0.2;
     private final int variableCount;
     private final Statement statement;
 
@@ -23,16 +29,22 @@ public class Simulation {
         //generate the starting population
         Population population = new Population(POP_SIZE, variableCount, true);
 
+        final Population popSnapLS0 = population;
+        IntStream.range(0, POP_SIZE).parallel().forEach(i -> LocalSearch.greedyImprove(statement, popSnapLS0.at(i + 1)));
+
         //evaluate P(t)
         Fitness[] populationFitness = new Fitness[POP_SIZE];
-        Fitness bestFitness = new Fitness(statement, population.at(1));
-        populationFitness[0] = bestFitness;
-        for (int i = 1; i < POP_SIZE; i++) {
-            Fitness chromosomeFitness = new Fitness(statement, population.at(i + 1));
-            populationFitness[i] =  chromosomeFitness;
+        final Population popSnaphot0 = population;
+        Arrays.parallelSetAll(populationFitness, i ->
+                new Fitness(statement, popSnaphot0.at(i + 1))
+        );
 
-            if (chromosomeFitness.getFitness() > bestFitness.getFitness()) {
-                bestFitness = chromosomeFitness;
+        Fitness bestFitness = populationFitness[0];
+        Chromosome bestChromosome = popSnaphot0.at(1);
+        for (int i = 1; i < POP_SIZE; i++) {
+            if (populationFitness[i].getFitness() > bestFitness.getFitness()) {
+                bestFitness = populationFitness[i];
+                bestChromosome = popSnaphot0.at(i+1);
             }
         }
 
@@ -58,26 +70,44 @@ public class Simulation {
 
             //mutate P(T)
             for (int i = 1; i <= POP_SIZE; i++) {
-                Mutation.mutate(population.at(i));
+                Mutation.mutate(population.at(i), 0.02);
             }
+
+            if (ThreadLocalRandom.current().nextDouble() < SCRAMBLE_CHANCE) {
+                int scrambleIdx = ThreadLocalRandom.current().nextInt(1, POP_SIZE + 1);
+                Chromosome chr = population.at(scrambleIdx);
+                Mutation.mutate(chr, 0.33);
+            }
+
+            final Population popSnapLS = population;
+            IntStream.range(0, POP_SIZE).parallel().forEach(i -> LocalSearch.greedyImprove(statement, popSnapLS.at(i + 1)));
 
             //evaluate P(T)
-            for (int i = 1; i <= POP_SIZE; i++) {
-                Fitness chromosomeFitness = new Fitness(statement, population.at(i));
-                populationFitness[i - 1] = chromosomeFitness;
+            final Population popSnapshot = population;
+            Arrays.parallelSetAll(populationFitness, i ->
+                    new Fitness(statement, popSnapshot.at(i + 1))
+            );
 
+            for (int i = 0; i < POP_SIZE; i++) {
+                Fitness chromosomeFitness = populationFitness[i];
                 if (chromosomeFitness.getFitness() > bestFitness.getFitness()) {
                     bestFitness = chromosomeFitness;
+                    bestChromosome = popSnapLS.at(i + 1);
                 }
             }
-
-            /*for (int i = 1; i <= POP_SIZE; i++) {
-                LocalSearch.greedyImprove(statement, population.at(i));
-            }*/
 
             System.out.println("Run: " + t + ". Current fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
         }
 
         System.out.println("Best fitness: " + bestFitness.getFitness() + ". Max possible fitness: " + bestFitness.max() + ".");
+
+        // write assignment to file
+        try (PrintWriter writer = new PrintWriter(new FileWriter("assignment.txt"))) {
+            for (int i = 1; i <= bestChromosome.getGeneCount(); i++) {
+                writer.println("Gene " + i + ": " + bestChromosome.getGene(i));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -3,7 +3,7 @@ package genetics.selection;
 import SAT.Statement;
 import genetics.Chromosome;
 import genetics.Fitness;
-import genetics.LocalSearch;
+//import genetics.LocalSearch;
 import genetics.Population;
 
 import java.util.ArrayList;
@@ -13,14 +13,14 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class Tournament extends Selection {
-    private final Statement statement;
+    //private final Statement statement;
 
     private static final int TOURNAMENT_SIZE = 3;
-    private static final int WINNER_COUNT = 2;
+    private static final int WINNER_COUNT = 1;
 
     public Tournament(Population current_population, Fitness[] fitness, Statement statement) {
         super(current_population, fitness);
-        this.statement = statement;
+        //this.statement = statement;
     }
 
     @Override
@@ -28,7 +28,7 @@ public class Tournament extends Selection {
         int popSize = fitness.length;
         int geneCount = currentPopulation.at(1).getGeneCount();
         Population newPopulation = new Population(popSize, geneCount, false);
-        int ELITE_COUNT = 15;
+        int ELITE_COUNT = 25;
 
         Integer[] indices = new Integer[popSize];
         for (int i = 0; i < popSize; i++) {
@@ -39,8 +39,6 @@ public class Tournament extends Selection {
 
         for (int e = 0; e < ELITE_COUNT; e++) {
             int eliteIdx = indices[e] + 1;
-            Chromosome elite = currentPopulation.at(eliteIdx);
-            LocalSearch.greedyImprove(statement, elite);
             newPopulation.setChromosome(e + 1, currentPopulation.at(eliteIdx));
         }
 

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        String filePath = "data/2bitadd_11.cnf";
+        String filePath = "data/2bitmax_6.cnf";
         CNFParser parser = new CNFParser();
         parser.parse(filePath);
 

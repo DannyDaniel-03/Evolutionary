@@ -1,12 +1,11 @@
 package genetics;
 
 public class Mutation {
-    private static double PROBABILITY = 0.01;
 
-    public static void mutate(Chromosome chromosome) {
+    public static void mutate(Chromosome chromosome, double probability) {
         int geneCount = chromosome.getGeneCount();
         for (int i = 1; i <= geneCount; i++) {
-            if (Math.random() < PROBABILITY) {
+            if (Math.random() < probability) {
                 chromosome.flipGene(i);
             }
         }
