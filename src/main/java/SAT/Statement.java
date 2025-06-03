@@ -33,33 +33,6 @@ public class Statement {
         return clauses[index];
     }
 
-    public boolean isSatisfied(Chromosome chromosome) {
-        for (Clause clause : clauses) {
-            if (!clause.isSatisfied(chromosome)) return false;
-        }
-        return true;
-    }
-
-    public double getClauseWeight(int index) {
-        checkIndex(index--);
-        return weight[index];
-    }
-
-    public Clause getClause(int index) {
-        checkIndex(index--);
-        return clauses[index];
-    }
-
-    public void incWeight(int index) {
-        checkIndex(index--);
-        weight[index] += 0.2;
-    }
-
-    public void setClauseWeight(int index, double newWeight) {
-        checkIndex(index--);
-        weight[index] = newWeight;
-    }
-
     public int getTrueClauses(Chromosome chromosome) {
         int count = 0;
         for (Clause clause : clauses) {

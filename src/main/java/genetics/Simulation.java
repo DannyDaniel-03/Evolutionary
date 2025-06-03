@@ -104,7 +104,7 @@ public class Simulation {
         // write assignment to file
         try (PrintWriter writer = new PrintWriter(new FileWriter("assignment.txt"))) {
             for (int i = 1; i <= bestChromosome.getGeneCount(); i++) {
-                writer.println("Gene " + i + ": " + bestChromosome.getGene(i));
+                writer.println("X" + i + ": " + bestChromosome.getGene(i));
             }
         } catch (IOException e) {
             e.printStackTrace();
