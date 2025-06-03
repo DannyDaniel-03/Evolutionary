@@ -11,8 +11,8 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Tournament extends Selection {
     public static double ELITE_RATE = 0.05;
 
-    private static final int TOURNAMENT_SIZE = 3;
-    private static final int WINNER_COUNT = 1;
+    private static final int TOURNAMENT_SIZE = 4;
+    private static final int WINNER_COUNT = 2;
 
     public Tournament(Population current_population, Fitness[] fitness) {
         super(current_population, fitness);
@@ -35,7 +35,7 @@ public class Tournament extends Selection {
                 participants.add(idx);
             }
 
-            participants.sort((a, b) -> Integer.compare(
+            participants.sort((a, b) -> Double.compare(
                     fitness[b - 1].getFitness(),
                     fitness[a - 1].getFitness()));
 
